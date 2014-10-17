@@ -479,6 +479,7 @@ boost::shared_ptr<SpinAdapted::SparseMatrix> SpinAdapted::Des::getworkingreprese
 
 void SpinAdapted::CreDes::build(const SpinBlock& b)
 {
+  pout << "build CRE DES " <<endl;
   dmrginp.makeopsT -> start();
   built = true;
   allocate(b.get_braStateInfo(), b.get_ketStateInfo());
@@ -530,9 +531,15 @@ void SpinAdapted::CreDes::build(const SpinBlock& b)
   {
     const boost::shared_ptr<SparseMatrix> op1 = rightBlock->get_op_rep(CRE, getSpinQuantum(i), i);
     if (leftBlock->has(DES) ) {
+      cout << " should be here " <<endl;
+      cout << " CRE " <<endl;
+      cout << *op1<<endl;
       boost::shared_ptr<SparseMatrix> op2 = leftBlock->get_op_rep(DES, -getSpinQuantum(j), j);
+      cout << " Des " <<endl;
+      cout << op2<<endl;
       double parity = getCommuteParity(op1->get_deltaQuantum()[0], op2->get_deltaQuantum()[0], get_deltaQuantum()[0]);
       SpinAdapted::operatorfunctions::TensorProduct(rightBlock, *op1, *op2, &b, &(b.get_stateInfo()), *this, 1.0*parity);
+      cout << "after tensorproduct " <<endl;
     }
     else {
       Transposeview top2 = Transposeview(leftBlock->get_op_rep(CRE, getSpinQuantum(j), j));
@@ -544,6 +551,7 @@ void SpinAdapted::CreDes::build(const SpinBlock& b)
   else
     abort();  
   dmrginp.makeopsT -> stop();
+  pout << "finish build CRE DES " <<endl;
 }
 
 

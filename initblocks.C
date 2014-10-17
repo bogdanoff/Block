@@ -212,7 +212,110 @@ void SpinAdapted::InitBlocks::InitNewEnvironmentBlock(SpinBlock &environment, Sp
           newEnvironment.BuildTensorProductBlock(environmentSites);
         }
       }
-    } else { //used for warmup guess environemnt
+    }
+    else if( dmrginp.warmup() == NEVPT) {
+      if(max(environmentStart,environmentEnd)< dmrginp.activespace()[0] || min(environmentStart,environmentEnd) > dmrginp.activespace()[1]){
+        //Environemnt only contains non-active sites.
+        std::vector<int> environment_sites(abs(environmentStart-environmentEnd)+1);
+        for(int i=0; i< environment_sites.size();i++)
+          environment_sites[i]=i+min(environmentStart,environmentEnd);
+        environment.default_op_components(!forward, leftState==rightState);
+        environment.setstoragetype(DISTRIBUTED_STORAGE);
+        environment.BuildSingleSlaterBlock(environment_sites);
+      }
+      else if (min(environmentStart,environmentEnd)>= dmrginp.activespace()[0] && min(environmentStart,environmentEnd) <= dmrginp.activespace()[1] ){
+        //Environment cantains active sites and non-active sites.
+        //TODO
+        //Just assume the non-active sites are at the end of chain.
+        std::vector<int> nonactive_sites(abs(max(environmentStart,environmentEnd)-dmrginp.activespace()[1])); 
+        std::vector<int> active_sites(abs(dmrginp.activespace()[1]-min(environmentStart,environmentEnd))+1);
+        for(int i=0; i<nonactive_sites.size();i++)
+          nonactive_sites[i]= i+dmrginp.activespace()[1]+1;
+        for(int i=0; i<active_sites.size();i++)
+          active_sites[i]= i+min(environmentStart,environmentEnd);
+        pout << "nonactive sites: " ;
+        for(auto i: nonactive_sites)
+          pout <<i <<"  ";
+        pout <<endl;
+        pout << "active sites: " ;
+        for(auto i: active_sites)
+          pout <<i <<"  ";
+        pout <<endl;
+
+        SpinBlock nonactive_environment;
+        nonactive_environment.default_op_components(!forward, leftState==rightState);
+        nonactive_environment.setstoragetype(DISTRIBUTED_STORAGE);
+        nonactive_environment.BuildSingleSlaterBlock(nonactive_sites);
+        StateInfo nonactive_environment_stateinfo = nonactive_environment.get_stateInfo();
+        StateInfo environmentdot_stateinfo = environmentDot.get_stateInfo();
+        StateInfo tmp2;
+        pout << " nonactive environment StateInfo " <<endl;
+        pout << nonactive_environment_stateinfo <<endl;;
+        if (onedot)
+          TensorProduct(tmp,nonactive_environment_stateinfo,tmp2,constraint);
+        else{
+          StateInfo tmp3;
+          TensorProduct(tmp,environmentdot_stateinfo,tmp3,constraint);
+          TensorProduct(tmp3,nonactive_environment_stateinfo,tmp2,constraint);
+        }
+        pout << " active environment StateInfo " <<endl;
+        pout << tmp2 <<endl;;
+        std::vector<SpinQuantum> quantumNumbers;
+        std::vector<int> distribution;
+        std::map<SpinQuantum, int> quantaDist;
+        std::map<SpinQuantum, int>::iterator quantaIterator;
+        bool environmentComplementary = !forward;
+        tmp2.quanta_distribution(quantumNumbers,distribution,true);
+        for (int i = 0; i < distribution.size (); ++i) {
+          quantaIterator = quantaDist.find(quantumNumbers[i]);
+          if (quantaIterator != quantaDist.end()) distribution[i] += quantaIterator->second;
+          distribution [i] /= 4; distribution [i] += 1;
+          if (distribution [i] > dmrginp.nquanta()) distribution [i] = dmrginp.nquanta();	
+              if(quantaIterator != quantaDist.end()) {
+            quantaIterator->second = distribution[i];
+          } else {
+            quantaDist[quantumNumbers[i]] = distribution[i];
+          }
+        }
+        if (dmrginp.outputlevel() > 0) pout << "\t\t\t Quantum numbers and states used for warm up :: " << endl << "\t\t\t ";
+        quantumNumbers.clear(); quantumNumbers.reserve(distribution.size());
+        distribution.clear();distribution.reserve(quantumNumbers.size());
+        std::map<SpinQuantum, int>::iterator qit = quantaDist.begin();
+
+        for (; qit != quantaDist.end(); qit++) {
+              quantumNumbers.push_back( qit->first); distribution.push_back(qit->second); 
+              if (dmrginp.outputlevel() > 0) {
+                pout << quantumNumbers.back() << " = " << distribution.back() << ", ";
+                if (! (quantumNumbers.size() - 6) % 6) pout << endl << "\t\t\t ";
+              }
+        }
+        pout << endl;
+
+        SpinBlock active_environment;
+        active_environment.set_integralIndex() = integralIndex;
+        active_environment.default_op_components(!forward, leftState==rightState);
+        active_environment.setstoragetype(DISTRIBUTED_STORAGE);
+        active_environment.BuildSlaterBlock (active_sites, quantumNumbers, distribution, false, false);
+
+        if(dot_with_sys && onedot) {
+          newEnvironment.set_integralIndex() = integralIndex;
+          newEnvironment.default_op_components(!forward, leftState==rightState);
+          newEnvironment.setstoragetype(DISTRIBUTED_STORAGE);
+          active_environment.addAdditionalCompOps();
+          nonactive_environment.addAdditionalCompOps();
+          newEnvironment.BuildSumBlock (constraint, active_environment, nonactive_environment);
+        } else {
+          environment.set_integralIndex() = integralIndex;
+          environment.default_op_components(!forward,leftState==rightState);
+          environment.setstoragetype(DISTRIBUTED_STORAGE);
+          active_environment.addAdditionalCompOps();
+          nonactive_environment.addAdditionalCompOps();
+          environment.BuildSumBlock (constraint, active_environment, nonactive_environment);
+        }
+      }
+
+    }
+    else { //used for warmup guess environemnt
       std::vector<SpinQuantum> quantumNumbers;
       std::vector<int> distribution;
       std::map<SpinQuantum, int> quantaDist;
@@ -283,6 +386,8 @@ void SpinAdapted::InitBlocks::InitNewEnvironmentBlock(SpinBlock &environment, Sp
     environment.addAdditionalCompOps();
     dmrginp.datatransfer -> stop();
 
+	  pout << "\t\t\t Environment block " << endl << environment << endl;
+	  environment.printOperatorSummary();
     newEnvironment.set_integralIndex() = integralIndex;
     newEnvironment.default_op_components(direct, environment, environmentDot, haveNormops, haveCompops, leftState==rightState);
     newEnvironment.setstoragetype(DISTRIBUTED_STORAGE);

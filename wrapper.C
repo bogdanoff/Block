@@ -105,11 +105,14 @@ void test()
   if (mpigetrank() == 0)
     printf("<0|0> = %18.10f   <0|H|0> = %18.10f\n", o, h);
 
-  MPS statec(2);
+  MPS statec(1);
   calcHamiltonianAndOverlap(statea, statec, h, o);
   if (mpigetrank() == 0)
     printf("<0|1> = %18.10f   <0|H|1> = %18.10f\n", o, h);
 
+  calcHamiltonianAndOverlap(statec, statea, h, o);
+  if (mpigetrank() == 0)
+    printf("<1|0> = %18.10f   <1|H|0> = %18.10f\n", o, h);
 
   //MPS stateb(1);
   //calcHamiltonianAndOverlap(stateb, stateb, h, o);
@@ -118,6 +121,10 @@ void test()
   calcHamiltonianAndOverlap(statec, statec, h, o);
   if (mpigetrank() == 0)
     printf("<1|1> = %18.10f   <1|H|1> = %18.10f\n", o, h);
+
+  double  overlap= calculateOverlap(statec,statec);
+  if (mpigetrank() == 0)
+    printf("<1|1> = %18.10f   \n", overlap);
 }
 
 void evaluateOverlapAndHamiltonian(long *occ, int length, double* o, double* h) {

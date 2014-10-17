@@ -36,7 +36,7 @@ bool screen_d_interaction(int index, const vector<int, std::allocator<int> >& in
     for (int i = 0; i < interactingix.size(); ++i) {
       const int ix = interactingix[i];
       int ixx = dmrginp.spatial_to_spin(ix); 
-      if (fabs(onee(lxx, ixx)) >= thresh)
+      if (fabs(onee(lxx, ixx)) >= thresh ||fabs(onee(ixx, lxx)) >= thresh)
 	return true;
     }
     
@@ -47,7 +47,7 @@ bool screen_d_interaction(int index, const vector<int, std::allocator<int> >& in
 	for (int k = i; k < interactingix.size(); ++k)
 	  {
 	    int kxx = dmrginp.spatial_to_spin(interactingix[k]); 
-	    if (fabs(twoe(lxx,ixx,jxx,kxx)) >= thresh)
+	    if (fabs(twoe(lxx,ixx,jxx,kxx)) >= thresh||fabs(twoe(ixx,jxx,lxx,kxx)) >= thresh)
 	      return true;
 	  }
       }
@@ -104,7 +104,7 @@ bool screen_cddcomp_interaction(int otherindex, const vector<int, std::allocator
       {
 	const int ix = selfindices[i];
 	int lx = otherindex;
-	if (fabs(onee(lx, ix)) >= thresh)
+	if (fabs(onee(lx, ix)) >= thresh|| fabs(onee(ix, lx)) >= thresh)
 	  return true;      
       }
     
@@ -116,7 +116,7 @@ bool screen_cddcomp_interaction(int otherindex, const vector<int, std::allocator
 	    const int jx = selfindices[j];
 	    const int kx = selfindices[k];
 	    int lx = otherindex;
-	    if (fabs(twoe(lx,ix,jx,kx)) >= thresh)
+	    if (fabs(twoe(lx,ix,jx,kx)) >= thresh ||fabs(twoe(ix,jx,lx,kx)) >= thresh)
 	      return true;
 	  }
     return (selfindices.size() == 0);
@@ -216,7 +216,7 @@ bool screen_cd_interaction(int ci, int dj, const vector<int, std::allocator<int>
 	{
 	  int lxx = dmrginp.spatial_to_spin(interactingix[l]);
 	  //if (fabs(twoe(cix, kxx, lxx, djx))>=thresh || fabs(twoe(kxx, cix, lxx, djx)) >= thresh)
-	  if (fabs(twoe(kxx, cix, djx, lxx))>=thresh || fabs(twoe(cix, kxx, djx, lxx)) >= thresh)
+	  if (fabs(twoe(kxx, cix, djx, lxx))>=thresh || fabs(twoe(cix, kxx, djx, lxx) || twoe(djx, lxx, kxx, cix))>=thresh || fabs(twoe(djx, lxx, cix, kxx)) >= thresh)
 	    return true; // there is a significant integral joining the two regions
 	}
     }
@@ -250,7 +250,7 @@ bool screen_dd_interaction(int ci, int cj, const vector<int, std::allocator<int>
       for (int l = 0; l < ninter; ++l)
 	{
 	  int lxx = dmrginp.spatial_to_spin(interactingix[l]);
-	  if (fabs(twoe(cix, cjx, kxx, lxx))>=thresh)
+	  if (fabs(twoe(cix, cjx, kxx, lxx))>=thresh ||fabs(twoe(kxx, lxx, cix, cjx))>=thresh)
 	    return true; // there is a significant integral joining the two regions
 	}
     }

@@ -29,7 +29,7 @@ class PairArray;
 class CCCCArray;
 class CCCDArray;
 
-enum WarmUpTypes {WILSON, LOCAL0, LOCAL2, LOCAL3, LOCAL4};
+enum WarmUpTypes {WILSON, LOCAL0, LOCAL2, LOCAL3, LOCAL4, NEVPT};
 enum hamTypes {QUANTUM_CHEMISTRY, HUBBARD, BCS, HEISENBERG};
 enum solveTypes {LANCZOS, DAVIDSON, CONJUGATE_GRADIENT};
 enum algorithmTypes {ONEDOT, TWODOT, TWODOT_TO_ONEDOT};
@@ -43,7 +43,7 @@ enum orbitalFormat{MOLPROFORM, DMRGFORM};
 enum reorderType{FIEDLER, GAOPT, MANUAL, NOREORDER};
 enum keywords{ORBS, LASTM, STARTM, MAXM,  REORDER, HF_OCC, SCHEDULE, SYM, NELECS, SPIN, IRREP,
 	      MAXJ, PREFIX, NROOTS, DOCD, DEFLATION_MAX_SIZE, MAXITER, BASENERGY,
-	      SCREEN_TOL, ODOT, SWEEP_TOL, OUTPUTLEVEL, NONSPINADAPTED, BOGOLIUBOV, TWODOT_NOISE, WARMUP, NUMKEYWORDS};
+	      SCREEN_TOL, ODOT, SWEEP_TOL, OUTPUTLEVEL, NONSPINADAPTED, BOGOLIUBOV, TWODOT_NOISE, WARMUP,ACTIVESPACE, NUMKEYWORDS};
 
 class Input {
 
@@ -171,6 +171,8 @@ class Input {
   int m_kept_nevpt2_states;
   pair<bool,int> NevPrint;
 
+  std::vector<int> m_activespace;
+
   friend class boost::serialization::access;
   template<class Archive>
   void serialize(Archive & ar, const unsigned int version)
@@ -193,6 +195,7 @@ class Input {
     ar & m_spatial_to_spin & m_spin_to_spatial & m_maxM & m_schedule_type_backward & m_schedule_type_default &m_integral_disk_storage_thresh;
     ar & n_twodot_noise & m_twodot_noise & m_twodot_gamma;
     ar & m_calc_ri_4pdm & m_store_ripdm_readable & m_nevpt2 & m_conventional_nevpt2 & m_kept_nevpt2_states & NevPrint;
+    ar & m_activespace;
   }
 
 
@@ -472,6 +475,8 @@ class Input {
   int slater_size() const {return m_norbs;}
   const std::vector<int> &reorder_vector() {return m_reorder;}
   bool spinAdapted() {return m_spinAdapted;}
+  const std::vector<int>& activespace() const { return m_activespace;}
+  std::vector<int>& activespace(){ return m_activespace;}
 };
 }
 #endif

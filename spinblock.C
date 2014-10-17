@@ -35,6 +35,7 @@ void SpinBlock::printOperatorSummary()
   else {
     for (std::map<opTypes, boost::shared_ptr< Op_component_base> >::const_iterator it = ops.begin(); it != ops.end(); ++it)
     {
+      pout << it->second->get_op_string()<<endl;
       if(it->second->is_core())
          pout << it->second->size()<<" :  "<<it->second->get_op_string()<<"  Core Operators  ";
       else
@@ -305,9 +306,11 @@ void SpinBlock::build_and_renormalise_operators(const std::vector<Matrix>& leftM
 {
   for (std::map<opTypes, boost::shared_ptr< Op_component_base> >::iterator it = ops.begin(); it != ops.end(); ++it) {
     opTypes ot = it->first;
+    cout << "opTypes" <<ot<<endl;
     if(! it->second->is_core()) {
       it->second->build_and_renormalise_operators(*this, ot, leftMat, bra, rightMat, ket);
     }
+    cout << "opTypes" <<ot<<endl;
   }
 }
 

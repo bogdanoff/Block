@@ -315,7 +315,10 @@ void SpinBlock::transform_operators(std::vector<Matrix>& rotateMatrix)
   StateInfo::transform_state(rightrotateMatrix, ketStateInfo, newketStateInfo);
 
 
+  pout << "build and renormalise operator"<<endl;
   build_and_renormalise_operators( leftrotateMatrix, &newbraStateInfo, rightrotateMatrix, &newketStateInfo );
+
+  pout << "build and renormalise operator"<<endl;
 
   braStateInfo = newbraStateInfo;
   braStateInfo.AllocatePreviousStateInfo ();

@@ -102,6 +102,17 @@ void SpinAdapted::SweepCompress::BlockDecimateAndCompress (SweepParams &sweepPar
   davidson_f(solution[0], outputState[0]);
   double overlap = 1.0;
 
+
+  Wavefunction overlapState;
+  overlapState.AllowQuantaFor(big.get_leftBlock()->get_braStateInfo(), big.get_rightBlock()->get_braStateInfo(), dmrginp.effective_molecule_quantum_vec());
+  overlapState.set_onedot(sweepParams.get_onedot());
+  overlapState.Clear();
+  big.multiplyOverlap(const_cast<Wavefunction&>(solution[0]),&overlapState,1);
+  double overlap1 = DotProduct(outputState[0],overlapState);
+  double overlap2 = DotProduct(outputState[0],outputState[0]);
+  pout << " Overlap between zero order wavefunction and pertuber wavefunction: " <<overlap1 <<endl;
+  pout << " Square of Norm of pertuber wavefunction: " <<overlap2 <<endl;
+
   SpinQuantum hq(0, SpinSpace(0), IrrepSpace(0));
   sweepParams.set_lowest_energy() = std::vector<double>(1,overlap);
 

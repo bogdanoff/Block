@@ -485,6 +485,7 @@ void LoadQSTensor(const int& site, QSTensor& m, int state) {
 
 
   void calcHamiltonianAndOverlap(const MPS& statea, const MPS& stateb, double& h, double& o) {
+    cout << "begin calculate overlap" <<endl;
 
     SpinBlock system, siteblock;
     bool forward = true, restart=false, warmUp = false;
@@ -503,6 +504,7 @@ void LoadQSTensor(const int& site, QSTensor& m, int state) {
       SpinBlock newSystem;
       system.addAdditionalCompOps();
 
+      cout << "calculate overlap step " <<i<<endl;
       InitBlocks::InitNewSystemBlock(system, MPS::siteBlocks[i+1], newSystem, 0, 1, sys_add, direct, 0, DISTRIBUTED_STORAGE, false, true);
 
       newSystem.transform_operators(const_cast<std::vector<Matrix>&>(statea.getSiteTensors(i+1)), 

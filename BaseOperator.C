@@ -425,7 +425,12 @@ void SparseMatrix::renormalise_transform(const std::vector<Matrix>& leftrotate_m
 void SparseMatrix::build_and_renormalise_transform(SpinBlock *big, const opTypes &ot, const std::vector<Matrix>& leftrotate_matrix, const StateInfo *newleftStateInfo, 
 						   const std::vector<Matrix>& rightrotate_matrix, const StateInfo *newrightStateInfo)
 {
+  pout << " SparseMatrix " <<*this<<endl;
   
+  for(auto i: orbs)
+    pout << i<<"  ";
+  pout << endl;
+  pout << "opTypes" << ot<<endl;
   boost::shared_ptr<SparseMatrix> tmp;
   if (orbs.size() == 0)
     tmp =   big->get_op_rep(ot, deltaQuantum);
@@ -433,6 +438,7 @@ void SparseMatrix::build_and_renormalise_transform(SpinBlock *big, const opTypes
     tmp =   big->get_op_rep(ot, deltaQuantum, orbs[0]);
   if (orbs.size() == 2)
     tmp =   big->get_op_rep(ot, deltaQuantum, orbs[0], orbs[1]);
+  pout << " orbs " <<endl;
 
   tmp->built = true;
 
@@ -454,6 +460,9 @@ void SparseMatrix::build_and_renormalise_transform(SpinBlock *big, const opTypes
 	}
       ++lQPrime;
     }
+
+
+  cout << "finish build" <<endl;
 
 }
 

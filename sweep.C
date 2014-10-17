@@ -176,8 +176,32 @@ void SpinAdapted::Sweep::BlockAndDecimate (SweepParams &sweepParams, SpinBlock& 
     environmentDotStart = systemDotEnd - 1;
     environmentDotEnd = environmentDotStart - environmentDotSize;
   }
-  systemDot = SpinBlock(systemDotStart, systemDotEnd, system.get_integralIndex(), true);
-  environmentDot = SpinBlock(environmentDotStart, environmentDotEnd, system.get_integralIndex(), true);
+  //TODO
+  //Maybe there is no need to contrain the quantum number of system dot.
+  //Since the total quantum number of whole system is contrained.
+//
+//  if(useSlater && dmrginp.warmup() == NEVPT && (max(systemDotStart,systemDotEnd) > dmrginp.activespace()[1] || max(systemDotStart,systemDotEnd) < dmrginp.activespace()[0]))
+//  {
+//    std::vector<int> systemdot_sites(abs(systemDotStart-systemDotEnd)+1);
+//    for(int i=0;i <systemdot_sites.size();i++)
+//      systemdot_sites[i]=min(systemDotStart,systemDotEnd)+i;
+//    systemDot.BuildSingleSlaterBlock(systemdot_sites);
+//  }
+//  else
+    systemDot = SpinBlock(systemDotStart, systemDotEnd, system.get_integralIndex(), true);
+
+  if(useSlater && dmrginp.warmup() == NEVPT && (max(environmentDotStart,environmentDotEnd) > dmrginp.activespace()[1] || max(environmentDotStart,environmentDotEnd) < dmrginp.activespace()[0]))
+  {
+    std::vector<int> environmentdot_sites(abs(environmentDotStart-environmentDotEnd)+1);
+    for(int i=0;i <environmentdot_sites.size();i++)
+      environmentdot_sites[i]=min(environmentDotStart,environmentDotEnd)+i;
+    environmentDot.default_op_components(!forward, true);
+    environmentDot.setstoragetype(DISTRIBUTED_STORAGE);
+    environmentDot.BuildSingleSlaterBlock(environmentdot_sites);
+  }
+  else
+    environmentDot = SpinBlock(environmentDotStart, environmentDotEnd, system.get_integralIndex(), true);
+
   SpinBlock environment, newEnvironment;
   SpinBlock big;  // new_sys = sys+sys_dot; new_env = env+env_dot; big = new_sys + new_env then renormalize to find new_sys(new)
   makeSystemEnvironmentBigBlocks(system, systemDot, newSystem, environment, environmentDot, newEnvironment, big, sweepParams, dot_with_sys, useSlater, system.get_integralIndex(), sweepParams.current_root(), sweepParams.current_root());

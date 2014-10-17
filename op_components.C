@@ -20,7 +20,9 @@ namespace SpinAdapted {
   template<> void Op_component<Cre>::build_iterators(SpinBlock& b)
     {
       if (b.get_sites().size () == 0) return; // blank construction (used in unset_initialised() Block copy construction, for use with STL)
-      const double screen_tol = dmrginp.oneindex_screen_tol();
+//      const double screen_tol = dmrginp.oneindex_screen_tol();
+      //TODO
+      const double screen_tol = 0;
       int integralIndex = b.get_integralIndex();
       std::vector<int> screened_c_ix = (dmrginp.hamiltonian() == BCS) ? 
         screened_d_indices(b.get_sites(), b.get_complementary_sites(), v_1[integralIndex], *b.get_twoInt(), v_cc, v_cccc, v_cccd, screen_tol) : 
@@ -80,7 +82,9 @@ namespace SpinAdapted {
     {
       if (b.get_sites().size () == 0) return; // blank construction (used in unset_initialised() Block copy construction, for use with STL)
       int integralIndex = b.get_integralIndex();
-      const double screen_tol = dmrginp.oneindex_screen_tol();
+//      const double screen_tol = dmrginp.oneindex_screen_tol();
+      //TODO
+      const double screen_tol = 0;
       std::vector<int> screened_d_ix = (dmrginp.hamiltonian() == BCS) ? 
         screened_d_indices(b.get_sites(), b.get_complementary_sites(), v_1[integralIndex], *b.get_twoInt(), v_cc, v_cccc, v_cccd, screen_tol) : 
         screened_d_indices(b.get_sites(), b.get_complementary_sites(), v_1[integralIndex], *b.get_twoInt(), screen_tol);

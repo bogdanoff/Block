@@ -171,6 +171,9 @@ void SpinAdapted::Input::initialize_defaults()
   m_orbformat=MOLPROFORM;
 
   m_warmup = LOCAL0;
+  m_activespace.resize(2);
+  m_activespace[0] = -1;
+  m_activespace[1] = 9999;
 }
 
 void SpinAdapted::Input::usedkey_error(string& key, string& line) {
@@ -285,11 +288,26 @@ SpinAdapted::Input::Input(const string& config_name) {
           m_warmup = LOCAL3;
         } else if (boost::iequals(tok[1], "local_4site")) {
           m_warmup = LOCAL4;
+        } else if (boost::iequals(tok[1], "nevpt")) {
+          m_warmup = NEVPT;
         } else {
           pout << "warm-up algorithm not defined" << endl;
           pout << tok[1] << endl;
           abort();
         }
+      }
+      else if (boost::iequals(keyword, "activespace")){
+        if (usedkey[ACTIVESPACE] == 0)
+          usedkey_error(keyword,msg);
+        usedkey[ACTIVESPACE] =0;
+        if (tok.size() != 3) {
+          pout << "must specify activespace lobound and upbound" <<endl;
+          pout << msg <<endl;
+          abort();
+        }
+        m_activespace[0] = atoi(tok[1].c_str());
+        m_activespace[1] = atoi(tok[2].c_str());
+
       }
       else if (boost::iequals(keyword, "startM")) {
 	if(usedkey[STARTM] == 0) 
@@ -1052,6 +1070,12 @@ SpinAdapted::Input::Input(const string& config_name) {
       v_cccc.rhf = true;
       v_cccd.rhf = true;
     }
+    //TODO
+    //ungly hack
+    if(m_calc_type== COMPRESS )
+      v_2[integral].permSymm = false;
+    if(m_calc_type== RESPONSE && integral ==1)
+      v_2[integral].permSymm = false;
     
     // Kij-based ordering by GA opt.
 #ifndef SERIAL
