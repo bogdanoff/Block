@@ -1,0 +1,10 @@
+*.o
+COEF
+OH
+CSFOH
+block.spin_adapted
+*.so
+*.a
+*~
+*.swp
+*.pyc
