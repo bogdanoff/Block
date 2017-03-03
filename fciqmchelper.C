@@ -14,6 +14,7 @@ namespace SpinAdapted{
   int MPS::sweepIters ;
   bool MPS::spinAdapted ;
   std::vector<StackSpinBlock> MPS::siteBlocks;
+  std::vector<StackSpinBlock> MPS::siteBlocks_noDES;
 
 
   //assumes that the state has been canonicalized in the left canonical form already and stored on disk
@@ -495,9 +496,11 @@ namespace SpinAdapted{
       statebw.set_data(datab);
       statebw.allocateOperatorMatrix();
     }
+#ifndef SERIAL
     calc.barrier();
     MPI_Bcast(stateaw.get_data(), stateaw.memoryUsed(), MPI_DOUBLE, 0, Calc);
     MPI_Bcast(statebw.get_data(), statebw.memoryUsed(), MPI_DOUBLE, 0, Calc);
+#endif
 
     StackWavefunction temp; temp.initialise(stateaw);
     temp.Clear();
