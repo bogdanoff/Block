@@ -6,15 +6,15 @@
 ######### GENERAL OPTIONS FOR USER #########
 
 # change to icpc for Intel
-CXX = clang++
+CXX = icpc
 MPICXX = mpiicpc
 export CXX
 export MPICXX
 
+BOOST_ROOT=/home/software/Boost/1_55_0-intel
+
 # BOOST include directory
-#BOOSTINCLUDE = /home/sharma/apps/forServer/boost_1_53_0_mt/boost_1_53_0/
-#BOOSTINCLUDE = /home/sharma/apps/boost/boost_1_55_0/
-BOOSTINCLUDE = /opt/local/include
+BOOSTINCLUDE = ${BOOST_ROOT}/include
 
 # set to yes if using BOOST version >= 1.56.0
 USE_BOOST56 = no
@@ -23,28 +23,25 @@ ifeq ($(USE_BOOST56), yes)
 endif
 
 # BOOST and LAPACK/BLAS linker
-#BOOSTLIB = -L/home/sharma/apps/forServer/boost_1_53_0_mt/boost_1_53_0/stage/lib -lboost_serialization -lboost_system -lboost_filesystem
-#BOOSTLIB = -L/home/sharma/apps/boost/boost_1_55_0/stage/lib -lboost_serialization -lboost_system -lboost_filesystem
-#BOOSTLIB = -lboost_serialization -lboost_system -lboost_filesystem
-BOOSTLIB = -L/opt/local/lib  -lboost_system-mt -lboost_filesystem-mt -lboost_serialization-mt
+#BOOSTLIB = -L${BOOST_ROOT}/lib  -lboost_system-mt -lboost_filesystem-mt -lboost_serialization-mt
+BOOSTLIB = -L${BOOST_ROOT}/lib -lboost_system -lboost_filesystem -lboost_serialization
 
-#LAPACKBLAS = -lblas -llapack
-LAPACKBLAS =    /usr/lib/liblapack.dylib /usr/lib/libblas.dylib
+LAPACKBLAS = -lblas -llapack
 
 # set if we will use MPI or OpenMP
 USE_MPI = no
-OPENMP = no
+OPENMP =  yes
 
 # FLAGS for linking in MKL
-USE_MKL = no
+USE_MKL = yes
 
 ifeq ($(USE_MKL), yes)
-MKLLIB = .
-LAPACKBLAS = -L${MKLLIB} -lmkl_gf_lp64 -lmkl_sequential -lmkl_core #-lrt #-liomp5
-MKLFLAGS = /usr/local/server/IntelStudio_2015/mkl/include/
-MKLOPT = -D_HAS_INTEL_MKL
+	MKLLIB = ${MKLROOT}/lib/intel64
+	LAPACKBLAS = -L${MKLLIB} -lmkl_gf_lp64 -lmkl_sequential -lmkl_core -lrt
+	MKLFLAGS = ${MKLROOT}/include
+	MKLOPT = -D_HAS_INTEL_MKL
 else
-MKLFLAGS = .
+	MKLFLAGS = .
 endif
 
 
@@ -53,13 +50,13 @@ endif
 
 # add Molcas interface to libqcdmrg.so
 # molcas compilation w/ -64 option requires I8 as well
-MOLCAS = no
+MOLCAS = yes
 
 # Link to Molpro
 MOLPRO = no
 # use this variable to set if we will use integer size of 8 or not.
 # molpro compilation requires I8, since their integers are long
-I8_OPT = no
+I8_OPT = yes
 
 # Optional MALLOC library
 MALLOC = #-L/home/sharma/apps/forServer/tcalloc/tcalloc_install/lib -ltcmalloc
@@ -116,12 +113,13 @@ MPI_OPT = -DSERIAL
 ifeq (icpc, $(CXX))
    ifeq ($(OPENMP), yes)
       OPENMP_FLAGS= -qopenmp
-	#ifeq ($(USE_MPI), yes)
-	#OPENMP_FLAGS += -lmpi_mt
-	#endif
+	ifeq ($(USE_MPI), yes)
+	OPENMP_FLAGS += -lmpi_mt
+	endif
    endif
 # Intel compiler
-  OPT = -DNDEBUG -O2 -g -funroll-loops #-ipo
+  OPT =  -O2 -g -funroll-loops #-ipo
+#  OPT = -DNDEBUG -O2 -g -funroll-loops #-ipo
 #  OPT = -g
 # Define a newer g++ binary if the default g++ is too old
 #  OPT += -gxx-name=g++-4.7
@@ -133,12 +131,13 @@ endif
 ifeq (g++, $(CXX))
    ifeq ($(OPENMP), yes)
       OPENMP_FLAGS= -fopenmp
-	#ifeq ($(USE_MPI), yes)
-	#OPENMP_FLAGS += -lmpi
-	#endif
+	ifeq ($(USE_MPI), yes)
+	OPENMP_FLAGS += -lmpi_mt
+	endif
    endif
 # GNU compiler
-   OPT = -DNDEBUG -O2 -g -funroll-loops -Werror
+   OPT = -DNDEBUG -O2 -g -funroll-loops
+#   OPT = -O2 -g -funroll-loops #-Werror
 #   OPT = -g -pg
 endif
 
